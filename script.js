@@ -347,7 +347,40 @@ function completeSubmit(form, btn, originalText) {
     btn.innerHTML = originalText;
     showPage('list');
 }
+// ==========================================
+// ดึงข้อมูลทั้งหมดจาก Google Sheet
+// ==========================================
+function loadDataFromSheet() {
+    // ปรับ UI เล็กน้อยให้รู้ว่ากำลังโหลดข้อมูล
+    const originalTitle = document.getElementById('page-title').innerText;
+    document.getElementById('page-title').innerHTML = `${originalTitle} <span class="fs-6 text-warning"><i class="fas fa-spinner fa-spin"></i> กำลังซิงค์ข้อมูล...</span>`;
 
+    fetch(scriptURL) // ส่ง Request ไปแบบ GET
+        .then(response => response.json())
+        .then(data => {
+            if (data.result === 'success') {
+                // นำข้อมูลจาก Sheet มาแทนที่ในตัวแปร incidents
+                incidents = data.data; 
+                
+                // อัปเดตข้อมูลลง LocalStorage ด้วย
+                localStorage.setItem('HIRS_Data', JSON.stringify(incidents));
+                
+                // สั่งให้รีเฟรชกราฟและตารางใหม่ทั้งหมดด้วยข้อมูลล่าสุด
+                updateDashboard();
+                renderTable();
+                renderAdminTable();
+                
+                document.getElementById('page-title').innerText = originalTitle; // คืนค่าชื่อ Title
+            } else {
+                console.error("Sheet Error:", data.message);
+                document.getElementById('page-title').innerText = originalTitle;
+            }
+        })
+        .catch(err => {
+            console.error("Fetch Error:", err);
+            document.getElementById('page-title').innerHTML = `${originalTitle} <span class="fs-6 text-danger"><i class="fas fa-wifi"></i> ออฟไลน์ (ใช้ข้อมูลในเครื่อง)</span>`;
+        });
+}
 // ==========================================
 // 6. DASHBOARD CHARTS & FILTERS
 // ==========================================
