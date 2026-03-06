@@ -114,6 +114,19 @@ function showApp() {
     applyRolePermissions();
     populateDropdowns();
     
+    // === เพิ่มบรรทัดนี้ลงไป เพื่อสั่งให้ดึงข้อมูลจาก Sheet ทันทีที่เข้าแอป ===
+    loadDataFromSheet();
+    
+    if(currentUser.role === 'admin') {
+        showPage('dashboard');
+    } else {
+        showPage('report');
+    }
+}
+    
+    applyRolePermissions();
+    populateDropdowns();
+    
     // ผู้ใช้ทั่วไปให้เข้าหน้า Form ก่อน / Admin เข้า Dashboard ก่อน
     if(currentUser.role === 'admin') {
         showPage('dashboard');
