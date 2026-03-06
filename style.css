@@ -1,0 +1,140 @@
+:root {
+    --primary-blue: #004b93;
+    --light-blue: #e3f2fd;
+    --hospital-white: #ffffff;
+    --text-dark: #333333;
+    --severity-green: #28a745; 
+    --severity-yellow: #ffc107; 
+    --severity-orange: #fd7e14; 
+    --severity-red: #dc3545;    
+}
+
+body {
+    font-family: 'Sarabun', sans-serif; 
+    background-color: #f4f6f9;
+    color: var(--text-dark);
+    overflow-x: hidden;
+}
+
+/* ================= LOGIN PAGE ================= */
+.login-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #00a8ff 100%);
+}
+
+.login-card {
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 400px;
+}
+
+/* ================= LAYOUT ================= */
+.sidebar {
+    height: 100vh;
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: var(--primary-blue);
+    color: white;
+    padding-top: 20px;
+    transition: all 0.3s;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar h3 {
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.sidebar a {
+    padding: 15px 25px;
+    text-decoration: none;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.7);
+    display: block;
+    transition: 0.2s;
+}
+
+.sidebar a:hover, .sidebar a.active {
+    color: white;
+    background-color: rgba(255,255,255,0.15);
+    border-left: 4px solid white;
+}
+
+.sidebar i {
+    margin-right: 10px;
+    width: 20px;
+    text-align: center;
+}
+
+.logout-menu {
+    margin-top: auto;
+    margin-bottom: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.logout-menu a:hover {
+    background-color: #dc3545;
+    color: white;
+    border-left: 4px solid #fff;
+}
+
+.main-content {
+    margin-left: 250px;
+    padding: 20px 30px;
+    transition: all 0.3s;
+}
+
+/* Cards & Components */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.card-header {
+    background-color: white;
+    font-weight: bold;
+    color: var(--primary-blue);
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+}
+.stat-icon {
+    font-size: 2.5rem;
+    opacity: 0.3;
+}
+
+/* Severity Colors */
+.badge-severity-A, .badge-severity-B { background-color: var(--severity-green); color: white; }
+.badge-severity-C, .badge-severity-D { background-color: var(--severity-yellow); color: black; }
+.badge-severity-E, .badge-severity-F { background-color: var(--severity-orange); color: white; }
+.badge-severity-G, .badge-severity-H, .badge-severity-I { background-color: var(--severity-red); color: white; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar { width: 70px; }
+    .sidebar h3 span, .sidebar a span { display: none; }
+    .sidebar a { text-align: center; padding: 15px 0; }
+    .sidebar i { margin-right: 0; font-size: 1.2rem; }
+    .main-content { margin-left: 70px; padding: 15px; }
+}
+
+/* Utility */
+.hidden { display: none !important; }
+.fade-in { animation: fadeIn 0.4s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

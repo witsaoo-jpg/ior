@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RIRS - ระบบรายงานความเสี่ยงและอุบัติการณ์</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div id="login-page" class="login-container">
+        <div class="login-card">
+            <div class="text-center mb-4">
+                <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                <h4 class="fw-bold text-primary mb-1">RIRS</h4>
+                <p class="text-dark fw-bold mb-0" style="font-size: 1.1rem;">Risk and Incident Reporting System</p>
+                <p class="text-secondary small mt-1">ระบบรายงานความเสี่ยงและอุบัติการณ์</p>
+            </div>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label">ชื่อผู้ใช้งาน (Username)</label>
+                    <input type="text" class="form-control" id="loginUsername" required placeholder="admin">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">รหัสผ่าน (Password)</label>
+                    <input type="password" class="form-control" id="loginPassword" required placeholder="1234">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">เข้าสู่ระบบ</button>
+                <div class="mt-3 text-center text-danger hidden" id="loginError">
+                    <small>ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง</small>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="app-container" class="hidden">
+        <div class="sidebar">
+           <h3 class="text-center mt-3 mb-4">
+                <i class="fas fa-shield-alt fa-2x mb-2"></i> <br>
+                <span style="font-size: 1.3rem; font-weight: bold; letter-spacing: 1px;">RIRS</span><br>
+                <span style="font-size: 0.75rem; font-weight: normal; color: rgba(255,255,255,0.7); display: block; line-height: 1.4; margin-top: 5px; padding: 0 10px;">
+                    Risk and Incident Reporting System<br>ระบบรายงานความเสี่ยงและอุบัติการณ์
+                </span>
+            </h3>
+            <a href="#" onclick="showPage('dashboard')" id="nav-dashboard" class="active">
+                <i class="fas fa-chart-line"></i> <span>Dashboard</span>
+            </a>
+            <a href="#" onclick="showPage('report')" id="nav-report">
+                <i class="fas fa-file-medical"></i> <span>รายงานอุบัติการณ์</span>
+            </a>
+            <a href="#" onclick="showPage('list')" id="nav-list">
+                <i class="fas fa-list-alt"></i> <span>รายการเหตุการณ์</span>
+            </a>
+            <a href="#" onclick="showPage('admin')" id="nav-admin">
+                <i class="fas fa-user-shield"></i> <span>Admin</span>
+            </a>
+            <div class="logout-menu">
+                <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span>ออกจากระบบ</span></a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                <h3 id="page-title" class="m-0 text-primary">Dashboard</h3>
+                <div class="user-profile d-flex align-items-center">
+                    <span class="me-2 fw-bold" id="displayUsername"><i class="fas fa-user-circle"></i> User</span>
+                </div>
+            </div>
+
+            <div id="page-dashboard" class="fade-in">
+                
+                <div class="card mb-4 bg-light">
+                    <div class="card-body py-3">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-2">
+                                <label class="form-label small">ตั้งแต่วันที่</label>
+                                <input type="date" class="form-control form-control-sm" id="dashStartDate">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">ถึงวันที่</label>
+                                <input type="date" class="form-control form-control-sm" id="dashEndDate">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small">กลุ่มงาน</label>
+                                <select class="form-select form-select-sm" id="dashDeptGroup">
+                                    <option value="">-- ทุกกลุ่มงาน --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small">หน่วยงาน</label>
+                                <select class="form-select form-select-sm" id="dashDept" disabled>
+                                    <option value="">-- ทุกหน่วยงาน --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button class="btn btn-primary btn-sm w-100" onclick="updateDashboard()"><i class="fas fa-search"></i> แสดงข้อมูล</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="card stat-card bg-primary text-white">
+                            <div><h6 class="mb-1">เหตุการณ์ทั้งหมด</h6><h2 id="stat-total" class="m-0">0</h2></div>
+                            <i class="fas fa-exclamation-triangle stat-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card bg-success text-white">
+                            <div><h6 class="mb-1">ความเสี่ยงต่ำ (A-B)</h6><h2 id="stat-low" class="m-0">0</h2></div>
+                            <i class="fas fa-check-circle stat-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card bg-warning text-dark">
+                            <div><h6 class="mb-1">ความเสี่ยงปานกลาง (C-D)</h6><h2 id="stat-med" class="m-0">0</h2></div>
+                            <i class="fas fa-exclamation stat-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card stat-card bg-danger text-white">
+                            <div><h6 class="mb-1">ความเสี่ยงสูง (E-I)</h6><h2 id="stat-high" class="m-0">0</h2></div>
+                            <i class="fas fa-heartbeat stat-icon"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">สถิติรายเดือน</div>
+                            <div class="card-body"><canvas id="monthlyChart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">แยกตามกลุ่มงาน / หน่วยงาน</div>
+                            <div class="card-body"><canvas id="deptChart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">แยกตามระดับความรุนแรง (Severity)</div>
+                            <div class="card-body"><canvas id="severityChart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-report" class="hidden fade-in">
+                <div class="card border-primary">
+                    <div class="card-header bg-primary text-white border-0">
+                        <h5 class="m-0">แบบฟอร์มบันทึกความเสี่ยงและอุบัติการณ์ (Incident Report)</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="incidentForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">วันที่เกิดเหตุ <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="date" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">เวลาที่เกิดเหตุ <span class="text-danger">*</span></label>
+                                    <input type="time" class="form-control" id="time" required>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">กลุ่มงาน <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="departmentGroup" required>
+                                        <option value="">-- เลือกกลุ่มงาน --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">รหัส - หน่วยงาน <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="department" required disabled>
+                                        <option value="">-- โปรดเลือกกลุ่มงานก่อน --</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">ประเภทเหตุการณ์ (Main Type) <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="mainType" required>
+                                        <option value="">-- เลือกหมวดหมู่หลัก --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">หัวข้อย่อย (Sub Type) <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="subType" required disabled>
+                                        <option value="">-- โปรดเลือกหมวดหมู่หลักก่อน --</option>
+                                    </select>
+                                    <input type="text" class="form-control mt-2 hidden" id="otherType" placeholder="โปรดระบุรายละเอียดอื่นๆ">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">ระดับความรุนแรง (Severity Level) <span class="text-danger">*</span></label>
+                                <select class="form-select w-50" id="severity" required>
+                                    <option value="">-- เลือก --</option>
+                                    <option value="A">A – Potential error</option>
+                                    <option value="B">B – Error but did not reach patient</option>
+                                    <option value="C">C – Reached patient but no harm</option>
+                                    <option value="D">D – Reached patient need monitoring</option>
+                                    <option value="E">E – Temporary harm</option>
+                                    <option value="F">F – Hospitalization required</option>
+                                    <option value="G">G – Permanent harm</option>
+                                    <option value="H">H – Life threatening</option>
+                                    <option value="I">I – Death</option>
+                                </select>
+                                <div class="form-text">A-B: สีเขียว, C-D: สีเหลือง, E-F: สีส้ม, G-I: สีแดง</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">รายละเอียดเหตุการณ์ <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="details" rows="4" required></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">การแก้ไขเบื้องต้น <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="action" rows="3" required></textarea>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">ผู้รายงาน <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="reporter" required>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" id="submitBtn"><i class="fas fa-save"></i> บันทึกอุบัติการณ์</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-list" class="hidden fade-in">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-list"></i> รายการเหตุการณ์ทั้งหมด
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="searchInput" placeholder="ค้นหารายละเอียด, หน่วยงาน, ประเภท...">
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-select" id="filterSeverity">
+                                    <option value="">ทุกระดับความรุนแรง</option>
+                                    <option value="Low">ความเสี่ยงต่ำ (A-B)</option>
+                                    <option value="Medium">ความเสี่ยงปานกลาง (C-D)</option>
+                                    <option value="High">ความเสี่ยงสูง (E-I)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-outline-primary w-100" onclick="renderTable()"><i class="fas fa-filter"></i> กรองข้อมูล</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>วันที่</th>
+                                        <th>กลุ่มงาน/หน่วยงาน</th>
+                                        <th>ประเภท/หัวข้อย่อย</th>
+                                        <th>Severity</th>
+                                        <th>จัดการ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="incidentTableBody">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="page-admin" class="hidden fade-in">
+                <div class="card border-dark">
+                    <div class="card-header bg-dark text-white">
+                        <i class="fas fa-cogs"></i> ส่วนการจัดการ (Admin Panel)
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3 align-items-center">
+                            <h5 class="m-0">ข้อมูลดิบ (Raw Data)</h5>
+                            <button class="btn btn-success" onclick="exportCSV()"><i class="fas fa-file-excel"></i> Export CSV</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered table-striped" style="font-size: 0.9rem;">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Group</th>
+            <th>Dept</th>
+            <th>Main Type</th>
+            <th>Severity</th>
+            <th>Reporter</th>
+            <th>สถานะ (Status)</th> </tr>
+    </thead>
+    <tbody id="adminTableBody">
+        </tbody>
+</table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-search-plus"></i> รายละเอียดอุบัติการณ์</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>วันที่/เวลา:</strong> <span id="modal-date" class="text-primary"></span></p>
+                            <p class="mb-1"><strong>กลุ่มงาน:</strong> <span id="modal-group"></span></p>
+                            <p class="mb-1"><strong>หน่วยงาน:</strong> <span id="modal-dept"></span></p>
+                            <p class="mb-1"><strong>ประเภท:</strong> <span id="modal-type"></span></p>
+                        </div>
+                        <div class="col-md-6 border-start">
+                            <p class="mb-1"><strong>ระดับความรุนแรง:</strong> <span id="modal-severity"></span></p>
+                            <p class="mb-1"><strong>ผู้รายงาน:</strong> <span id="modal-reporter"></span></p>
+                        </div>
+                    </div>
+                    <hr>
+                    <h6 class="fw-bold">รายละเอียดเหตุการณ์:</h6>
+                    <p id="modal-details" class="bg-light p-3 rounded border"></p>
+                    <h6 class="fw-bold mt-3">การแก้ไขเบื้องต้น:</h6>
+                    <p id="modal-action" class="bg-light p-3 rounded border text-secondary"></p>
+                    
+                    <hr>
+                    <h6 class="fw-bold mt-3 text-success"><i class="fas fa-comment-medical"></i> การตอบกลับจาก Admin (Feedback):</h6>
+                    <div id="reply-section">
+                        </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิดหน้าต่าง</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
