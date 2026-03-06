@@ -114,18 +114,8 @@ function showApp() {
     applyRolePermissions();
     populateDropdowns();
     
-    // === เพิ่มบรรทัดนี้ลงไป เพื่อสั่งให้ดึงข้อมูลจาก Sheet ทันทีที่เข้าแอป ===
+    // สั่งให้ดึงข้อมูลจาก Sheet ทันทีที่เข้าแอป
     loadDataFromSheet();
-    
-    if(currentUser.role === 'admin') {
-        showPage('dashboard');
-    } else {
-        showPage('report');
-    }
-}
-    
-    applyRolePermissions();
-    populateDropdowns();
     
     // ผู้ใช้ทั่วไปให้เข้าหน้า Form ก่อน / Admin เข้า Dashboard ก่อน
     if(currentUser.role === 'admin') {
@@ -360,6 +350,7 @@ function completeSubmit(form, btn, originalText) {
     btn.innerHTML = originalText;
     showPage('list');
 }
+
 // ==========================================
 // ดึงข้อมูลทั้งหมดจาก Google Sheet
 // ==========================================
@@ -394,6 +385,7 @@ function loadDataFromSheet() {
             document.getElementById('page-title').innerHTML = `${originalTitle} <span class="fs-6 text-danger"><i class="fas fa-wifi"></i> ออฟไลน์ (ใช้ข้อมูลในเครื่อง)</span>`;
         });
 }
+
 // ==========================================
 // 6. DASHBOARD CHARTS & FILTERS
 // ==========================================
@@ -505,48 +497,6 @@ function showDetail(id) {
     document.getElementById('modal-action').innerText = item.action || '-';
     document.getElementById('modal-details').innerHTML = `<strong>รหัสอ้างอิง:</strong> ${item.id} <br><br> ${item.details}`;
 
-    new bootstrap.Modal(document.getElementById('detailModal')).show();
-}
-
-function renderAdminTable() {
-    const tbody = document.getElementById('adminTableBody');
-    if(!tbody) return;
-    tbody.innerHTML = '';
-    incidents.forEach(item => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${item.id}</td><td>${item.date}</td><td>${item.group}</td><td>${item.dept}</td><td>${item.mainType}</td><td>${item.severity}</td><td>${item.reporter}</td>`;
-        tbody.appendChild(tr);
-    });
-}
-
-function exportCSV() {
-    let csv = "ID,Date,Time,Group,Department,MainType,SubType,Severity,Details,Action,Reporter,Status\n";
-    incidents.forEach(r => {
-        csv += `${r.id},${r.date},${r.time},${r.group},${r.dept},${r.mainType},${r.subType},${r.severity},"${(r.details||'').replace(/"/g, '""')}","${(r.action||'').replace(/"/g, '""')}",${r.reporter},${r.status||'Pending'}\n`;
-    });
-    const link = document.createElement("a");
-    link.href = encodeURI("data:text/csv;charset=utf-8,\uFEFF" + csv); 
-    link.download = "RIRS_Data.csv";
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-}
-// ==========================================
-// 8. DETAIL MODAL & ADMIN REPLY
-// ==========================================
-function showDetail(id) {
-    const item = incidents.find(i => i.id === id);
-    if(!item) return;
-    
-    document.getElementById('modal-date').innerText = `${item.date} ${item.time}`;
-    document.getElementById('modal-group').innerText = item.group;
-    document.getElementById('modal-dept').innerText = item.dept;
-    document.getElementById('modal-type').innerText = `${item.mainType} > ${item.subType}`;
-    document.getElementById('modal-severity').innerHTML = `<span class="badge ${getSeverityColor(item.severity)}">Level ${item.severity}</span>`;
-    document.getElementById('modal-reporter').innerText = item.reporter;
-    document.getElementById('modal-action').innerText = item.action || '-';
-    document.getElementById('modal-details').innerHTML = `<strong>รหัสอ้างอิง:</strong> ${item.id} <br><br> ${item.details}`;
-
     // จัดการส่วนของการตอบกลับ (Reply) ตาม Role
     const replySection = document.getElementById('reply-section');
     if (currentUser.role === 'admin') {
@@ -575,6 +525,30 @@ function showDetail(id) {
     }
 
     new bootstrap.Modal(document.getElementById('detailModal')).show();
+}
+
+function renderAdminTable() {
+    const tbody = document.getElementById('adminTableBody');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+    incidents.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${item.id}</td><td>${item.date}</td><td>${item.group}</td><td>${item.dept}</td><td>${item.mainType}</td><td>${item.severity}</td><td>${item.reporter}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+function exportCSV() {
+    let csv = "ID,Date,Time,Group,Department,MainType,SubType,Severity,Details,Action,Reporter,Status\n";
+    incidents.forEach(r => {
+        csv += `${r.id},${r.date},${r.time},${r.group},${r.dept},${r.mainType},${r.subType},${r.severity},"${(r.details||'').replace(/"/g, '""')}","${(r.action||'').replace(/"/g, '""')}",${r.reporter},${r.status||'Pending'}\n`;
+    });
+    const link = document.createElement("a");
+    link.href = encodeURI("data:text/csv;charset=utf-8,\uFEFF" + csv); 
+    link.download = "RIRS_Data.csv";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
 }
 
 // ฟังก์ชันสำหรับ Admin บันทึกการตอบกลับและสถานะ
@@ -609,7 +583,7 @@ function saveReply(id) {
         .then(data => {
             if (data.result === 'success') {
                 alert('บันทึกการตอบกลับและอัปเดตสถานะสำเร็จ!');
-                // ปิด Modal อัตโนมัติเมื่อบันทึกเสร็จ (เสริมความสะดวก)
+                // ปิด Modal อัตโนมัติเมื่อบันทึกเสร็จ
                 bootstrap.Modal.getInstance(document.getElementById('detailModal')).hide();
             } else {
                 alert(`เกิดข้อผิดพลาดจากเซิร์ฟเวอร์: ${data.message}`);
